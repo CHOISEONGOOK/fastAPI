@@ -2,8 +2,8 @@ import time
 from threading import Thread, Lock
 from pyModbusTCP.client import ModbusClient
 
-SERVER_HOST = "121.179.67.14"
-SERVER_PORT = 15899
+SERVER_HOST = "localhost"
+SERVER_PORT = 502
 
 # set global
 regs = []
@@ -15,11 +15,17 @@ regs_lock = Lock()
 def polling_thread():
     """Modbus polling thread."""
     global regs, regs_lock
-    c = ModbusClient(host=SERVER_HOST, port=SERVER_PORT, auto_open=True)
+
+    try:
+        c = ModbusClient(host=SERVER_HOST, port=SERVER_PORT, auto_open=True)
+    except ValueError:
+        print("Error with host or port params")
+
     # polling loop
     while True:
         # do modbus reading on socket
         reg_list = c.read_holding_registers(0, 10)
+
         # if read is ok, store result in regs (with thread lock)
         if reg_list:
             with regs_lock:
@@ -30,6 +36,7 @@ def polling_thread():
 
 # start polling thread
 tp = Thread(target=polling_thread)
+
 # set daemon: polling thread will exit if main thread exit
 tp.daemon = True
 tp.start()
@@ -41,8 +48,3 @@ while True:
         print(regs)
     # 1s before next print
     time.sleep(1)
-
-#try:
-#    c = ModbusClient (host = SERVER_HOST, port = SERVER_PORT, auto_open=True, auto_close=True)
-#except ValueError:
-#    print("Error with host or port params")
