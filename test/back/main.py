@@ -1,5 +1,3 @@
-# https://github.com/hogeline/sample_fastapi
-
 from fastapi import FastAPI
 from typing import List
 from starlette.middleware.cors import CORSMiddleware
